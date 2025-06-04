@@ -155,7 +155,16 @@ mz_flow_temp_launch_viewer = true
 GPL v3
 
 ---
+## Support the project
+[![Donate](https://storage.ko-fi.com/cdn/fullLogoKofi.png)](https://ko-fi.com/yurymonzon)
+
+If you found this project useful, consider supporting my work with a small donation: https://ko-fi.com/yurymonzon Your support is greatly appreciated!
+
+---
 
 ## Author
 
-Yury MonZon
+Developed by Yury MonZon with inspiration and ideas from BELAYEL Salim, creator of the original temperature controller application https://github.com/sb53systems/G-Code-Flow-Temperature-Controller . Support him too!
+
+
+
