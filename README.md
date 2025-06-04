@@ -58,7 +58,17 @@ python3 mz_flow_temp.py <input.gcode>
 
 ### OrcaSlicer
 
-1. Go to **Printer Settings > Notes** and add:
+1. Go to **Printer Settings > Machine G-code** and add:
+
+    ```; MZ FLOW TEMP START``` at the **end** of **Machine start G-code**
+
+    and
+
+    ```; MZ FLOW TEMP END``` at the **beginning** of **Machine end G-code**
+
+    ![Machine G-code](images/start_end.png)
+
+2. Then go to **Printer Settings > Notes** and add:
     ```
     mz_flow_temp_sec_per_c_heating = 6
     mz_flow_temp_sec_per_c_cooling = 4
@@ -66,14 +76,14 @@ python3 mz_flow_temp.py <input.gcode>
     ```
     ![Printer notes](images/printer_notes.png)
 
-2. In the **Filament profile**, set your own values (these will be used by the script):
+3. In the **Filament profile**, set your own values (these will be used by the script):
 
     ![Low High temp range](images/low_high_temp.png)
     ![First layer temp](images/first_layer_temp.png)
     ![Max flow rate](images/max_vfr.png)
     ![Min print speed](images/min_print_speed.png)
 
-3. Add the command to **Print process > Others > Post-processing scripts** (adjust the path as needed):
+4. Add the command to **Print process > Others > Post-processing scripts** (adjust the path as needed):
 
     ```bash
     python3 <path to script>/mz_flow_temp.py
