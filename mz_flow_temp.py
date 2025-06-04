@@ -677,6 +677,16 @@ def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
     try:
         with open(filename, 'w', encoding='utf-8', newline='') as fout:
             fout.writelines(processed_lines)
+            # Also save a copy for the viewer if enabled
+            if settings.get('mz_flow_temp_launch_viewer', False):
+                viewer_dir = os.path.dirname(log_path)
+                viewer_filename = os.path.join(viewer_dir, "processed.gcode")
+                try:
+                    with open(viewer_filename, 'w', encoding='utf-8', newline='') as backup_fout:
+                        backup_fout.writelines(processed_lines)
+                    logging.info(f"Viewer G-code saved to: {viewer_filename}")
+                except Exception as e:
+                    logging.warning(f"Could not save viewer G-code: {e}")
     except Exception as e:
         logging.error(f"ERROR writing file: {e}")
         sys.exit(8)
@@ -733,12 +743,14 @@ def main():
             _, parent_exe = get_parent_process_info()
             if parent_exe and os.path.isfile(parent_exe):
                 parent_exe = os.path.normpath(parent_exe)
-                # if filename ends with .pp then remove .pp from the end
-                if filename.endswith('.pp'):
-                    filename = filename[:-3]
-                logging.info(f"Launching viewer process: {parent_exe} {filename}")
+                viewer_dir = os.path.dirname(log_path)
+                viewer_filename = os.path.join(viewer_dir, "processed.gcode")
+                logging.info(f"Launching viewer process: {parent_exe} {viewer_filename}")
                 try:
-                    subprocess.Popen([parent_exe, filename])
+                    args = [str(parent_exe), str(viewer_filename)]
+                    logging.debug(f"Launching viewer process with args: {args}")
+                    proc = subprocess.Popen(args)
+                    logging.debug(f"subprocess.Popen returned: {proc}")
                 except Exception as e:
                     logging.warning(f"Failed to launch parent process: {e}")
             else:
