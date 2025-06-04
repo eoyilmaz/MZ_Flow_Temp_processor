@@ -1,1 +1,161 @@
-# Gcode-flow
+# MZ Flow Temp Processor
+
+A Python post-processor for 3D printer G-code files, implementing advanced flow and temperature smoothing for improved print quality and layer adhesion.
+
+![Benchy temperature visualization](images/benchy_temp.png)
+![Graphs](images/graphs.png)
+
+---
+
+## Features
+
+- Extracts extrusion moves and calculates flow rates from G-code.
+- Smooths flow and dynamically adjusts nozzle temperature based on predicted flow demand.
+- Clamps feedrate to avoid exceeding the printer's maximum volumetric flow capability.
+- Real-time plotting of flow and temperature profiles.
+- Integrates as a post-processing script with popular slicers (OrcaSlicer for now, others to come).
+- Reads required print and script-specific parameters from G-code comments or config blocks.
+- Optionally relaunches the slicer viewer after processing.
+
+---
+
+## Installation
+
+**Requirements:**
+- Python 3
+- numpy
+- matplotlib
+- PyQt5
+- psutil
+
+**Install dependencies:**
+
+Linux:
+```bash
+sudo apt install python3-matplotlib python3-numpy python3-pyqt5 python3-psutil
+```
+
+Windows:
+```cmd
+pip install matplotlib numpy PyQt5 psutil
+```
+
+---
+
+## Usage
+
+```bash
+python mz_flow_temp.py <input.gcode>
+```
+or
+```bash
+python3 mz_flow_temp.py <input.gcode>
+```
+
+---
+
+## Slicer Integration Guide
+
+### OrcaSlicer
+
+1. Go to **Printer Settings > Notes** and add:
+    ```
+    mz_flow_temp_sec_per_c_heating = 6
+    mz_flow_temp_sec_per_c_cooling = 4
+    mz_flow_temp_launch_viewer = true
+    ```
+    ![Printer notes](images/printer_notes.png)
+
+2. In the **Filament profile**, set your own values (these will be used by the script):
+
+    ![Low High temp range](images/low_high_temp.png)
+    ![First layer temp](images/first_layer_temp.png)
+    ![Max flow rate](images/max_vfr.png)
+    ![Min print speed](images/min_print_speed.png)
+
+3. Add the command to **Print process > Others > Post-processing scripts** (adjust the path as needed):
+
+    ```bash
+    python3 <path to script>/mz_flow_temp.py
+    ```
+    or
+    ```bash
+    python <path to script>/mz_flow_temp.py
+    ```
+
+    ![Post script](images/post_script.png)
+
+### Other Slicers
+
+- The script is designed to work with OrcaSlicer. Other slicers might work but not tested yet.
+
+---
+
+## Required G-code Parameters
+
+Ensure your G-code includes the following parameters:
+
+```gcode
+; nozzle_temperature_range_high = 260
+; nozzle_temperature_range_low = 220
+; filament_diameter = 1.75
+; slow_down_min_speed = 30
+; filament_max_volumetric_speed = 12  
+; nozzle_temperature_initial_layer = 240
+; initial_layer_print_height = 0.2
+```
+
+And in your printer_notes block, include:
+
+```
+mz_flow_temp_sec_per_c_heating = 6
+mz_flow_temp_sec_per_c_cooling = 4
+mz_flow_temp_launch_viewer = true
+```
+
+---
+
+## How It Works
+
+- The script parses your G-code, extracts extrusion moves, and calculates flow rates.
+- It smooths flow transitions and dynamically adjusts nozzle temperature based on predicted flow demand.
+- Feedrate is clamped to avoid exceeding the printer's maximum volumetric flow.
+- Real-time plots visualize flow and temperature profiles during processing.
+- The processed G-code is saved, and optionally, your slicer viewer is launched.
+
+---
+
+## Exit Codes
+
+| Code | Meaning                                 |
+|------|-----------------------------------------|
+| 0    | Success                                 |
+| 1    | Incorrect usage (missing arguments)     |
+| 2    | Input file not found                    |
+| 3    | Missing EXECUTABLE_BLOCK markers        |
+| 4    | Missing MZ FLOW TEMP markers            |
+| 5    | Error parsing settings from G-code      |
+| 6    | Missing required parameters             |
+| 7    | No moves found in G-code                |
+| 8    | Error writing processed G-code file     |
+| 9    | Unhandled exception                     |
+
+---
+
+## Troubleshooting
+
+- **No plots or output:** Ensure all dependencies are installed and your G-code includes the required parameters and markers.
+- **Script not running in slicer:** Double-check the post-processing script path and permissions.
+- **Incorrect temperature/flow:** Verify your filament and printer settings in the slicer match your hardware.
+
+---
+
+## License
+
+GPL v3
+
+---
+
+## Author
+
+Yury MonZon
