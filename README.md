@@ -125,6 +125,17 @@ mz_flow_temp_launch_viewer = true
 
 ---
 
+## Note about OrcaSlicer Viewer
+
+**OrcaSlicer does not display the post-processed G-code after the script runs.**  
+To work around this, the script can automatically relaunch OrcaSlicer as a viewer for the processed file after processing is complete (unless you close the plot window with ESC).  
+This ensures you see the updated G-code and temperature/flow changes in the slicer preview.
+
+If you do not want the viewer to relaunch, simply close the plot window with the ESC key or disable this function with
+```mz_flow_temp_launch_viewer = false```
+
+---
+
 ## Viewer Launch Behavior
 
 - **If you close the plot window with the ESC key:**  
