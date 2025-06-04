@@ -679,8 +679,7 @@ def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
             fout.writelines(processed_lines)
             # Also save a copy for the viewer if enabled
             if settings.get('mz_flow_temp_launch_viewer', False):
-                viewer_dir = os.path.dirname(log_path)
-                viewer_filename = os.path.join(viewer_dir, "processed.gcode")
+                viewer_filename = os.path.join(os.path.dirname(log_path), "processed.gcode")
                 try:
                     with open(viewer_filename, 'w', encoding='utf-8', newline='') as backup_fout:
                         backup_fout.writelines(processed_lines)
@@ -743,8 +742,7 @@ def main():
             _, parent_exe = get_parent_process_info()
             if parent_exe and os.path.isfile(parent_exe):
                 parent_exe = os.path.normpath(parent_exe)
-                viewer_dir = os.path.dirname(log_path)
-                viewer_filename = os.path.join(viewer_dir, "processed.gcode")
+                viewer_filename = os.path.join(os.path.dirname(log_path), "processed.gcode")
                 logging.info(f"Launching viewer process: {parent_exe} {viewer_filename}")
                 try:
                     args = [str(parent_exe), str(viewer_filename)]
