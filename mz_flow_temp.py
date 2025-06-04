@@ -588,17 +588,52 @@ def process_moves_pressure_equalizer(moves):
         elif is_extruding:
             move.clamped_feedrate = move.f
             move.feedrate_was_clamped = False
+    # Smooth final_flows before final plot
+    times_np = np.array(plotting_data['times'])
+    final_flows_np = np.array(plotting_data['final_flows'])
+    smooth_window_time = max(settings['mz_flow_temp_sec_per_c_heating'], settings['mz_flow_temp_sec_per_c_cooling']) * 0.65
+    plotting_data['final_flows'] = list(smooth_array(final_flows_np, times_np, window_sec=(smooth_window_time)))
     update_realtime_plot()
     logging.info("Updating plot and waiting for user to close window...")
     global plot_fig
     plot_fig.suptitle('Flow and Temperature', fontsize=14)
     plot_fig.canvas.draw()
     def on_key_press(event):
-        if event.key in ['q', 'Q', 'escape']:
+        # Set a flag if ESC is pressed, otherwise close as normal
+        nonlocal esc_pressed
+        if event.key in ['escape']:
+            esc_pressed = True
             plt.close('all')
+        elif event.key in ['q', 'Q']:
+            esc_pressed = False
+            plt.close('all')
+    esc_pressed = False
     plot_fig.canvas.mpl_connect('key_press_event', on_key_press)
     plt.ioff()
     plt.show(block=True)
+    return esc_pressed
+
+def smooth_array(arr, times, window_sec=2.0):
+    """
+    Smooths the array using a moving average with a window of window_sec seconds.
+    arr: numpy array of values to smooth
+    times: numpy array of time values (same length as arr)
+    window_sec: window size in seconds
+    Returns: smoothed numpy array
+    """
+    import numpy as np
+    if len(arr) < 2:
+        return arr
+    smoothed = np.zeros_like(arr)
+    for i in range(len(arr)):
+        t0 = times[i] - window_sec / 2
+        t1 = times[i] + window_sec / 2
+        mask = (times >= t0) & (times <= t1)
+        if np.any(mask):
+            smoothed[i] = np.mean(arr[mask])
+        else:
+            smoothed[i] = arr[i]
+    return smoothed
 
 # Add debug logging for G-code output feedrate and flow
 def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
@@ -685,7 +720,7 @@ def main():
             logging.error("No moves found between MZ FLOW TEMP markers!")
             sys.exit(7)
 
-        process_moves_pressure_equalizer(moves_in_region)
+        esc_pressed = process_moves_pressure_equalizer(moves_in_region)
         processed_filename = save_processed_gcode(filename, moves, mz_start, mz_end)
         if processed_filename:
             logging.info("Processing complete!")
@@ -693,7 +728,8 @@ def main():
             logging.error("Processing failed!")
             sys.exit(8)
         
-        if settings.get('mz_flow_temp_launch_viewer', False):
+        # Only launch viewer if not closed with ESC
+        if settings.get('mz_flow_temp_launch_viewer', False) and not esc_pressed:
             _, parent_exe = get_parent_process_info()
             if parent_exe and os.path.isfile(parent_exe):
                 parent_exe = os.path.normpath(parent_exe)

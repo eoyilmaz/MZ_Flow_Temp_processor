@@ -125,6 +125,17 @@ mz_flow_temp_launch_viewer = true
 
 ---
 
+## Viewer Launch Behavior
+
+- **If you close the plot window with the ESC key:**  
+  The viewer will **not** be launched.
+- **If you close the plot window with the window close (cross) icon or press Q:**  
+  The viewer **will** be launched (if enabled in settings).
+
+This allows you to skip launching the viewer if you want to quickly exit after reviewing the plot.
+
+---
+
 ## Exit Codes
 
 | Code | Meaning                                 |
