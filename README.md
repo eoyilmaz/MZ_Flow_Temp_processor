@@ -95,6 +95,30 @@ python3 mz_flow_temp.py <input.gcode>
 
     ![Post script](images/post_script.png)
 
+---
+
+## ⚠️ Note about OrcaSlicer Viewer ⚠️
+
+**OrcaSlicer does not display the post-processed G-code after the script runs.**  
+
+To work around this, the script can automatically relaunch OrcaSlicer as a viewer for the processed file after processing is complete (unless you close the plot window with ESC).  
+
+This ensures you see the updated G-code and temperature/flow changes in the slicer preview.
+
+If you do not want the viewer to relaunch, simply close the plot window with the ESC key or disable this function permanently with
+```mz_flow_temp_launch_viewer = false```
+
+## Viewer Launch Behavior
+
+- **If you close the plot window with the ESC key:**  
+  The viewer will **not** be launched.
+- **If you close the plot window with the window close (cross) icon or press Q:**  
+  The viewer **will** be launched (if enabled in settings).
+
+This allows you to skip launching the viewer if you want to quickly exit after reviewing the plot.
+
+---
+
 ### Other Slicers
 
 - The script is designed to work with OrcaSlicer. Other slicers might work but not tested yet.
@@ -132,28 +156,6 @@ mz_flow_temp_launch_viewer = true
 - Feedrate is clamped to avoid exceeding the printer's maximum volumetric flow.
 - Real-time plots visualize flow and temperature profiles during processing.
 - The processed G-code is saved, and optionally, your slicer viewer is launched.
-
----
-
-## Note about OrcaSlicer Viewer
-
-**OrcaSlicer does not display the post-processed G-code after the script runs.**  
-To work around this, the script can automatically relaunch OrcaSlicer as a viewer for the processed file after processing is complete (unless you close the plot window with ESC).  
-This ensures you see the updated G-code and temperature/flow changes in the slicer preview.
-
-If you do not want the viewer to relaunch, simply close the plot window with the ESC key or disable this function with
-```mz_flow_temp_launch_viewer = false```
-
----
-
-## Viewer Launch Behavior
-
-- **If you close the plot window with the ESC key:**  
-  The viewer will **not** be launched.
-- **If you close the plot window with the window close (cross) icon or press Q:**  
-  The viewer **will** be launched (if enabled in settings).
-
-This allows you to skip launching the viewer if you want to quickly exit after reviewing the plot.
 
 ---
 
