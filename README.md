@@ -157,6 +157,14 @@ mz_flow_temp_launch_viewer = true
 - Real-time plots visualize flow and temperature profiles during processing.
 - The processed G-code is saved, and optionally, your slicer viewer is launched.
 
+## What to expect
+
+This tool automatically analyzes your print and makes small adjustments to the flow and nozzle temperature to help your printer keep up with changes in flow. 
+
+Temperature changes are made gradually, not instantly, because the printer's heater takes time to respond - so you won't see sudden jumps, but smooth transitions. This helps prevent issues like under extrusion and improves layer bonding, especially on complex or fast prints. 
+
+After running the script you can preview the changes in your slicer if enabled.
+
 ---
 
 ## Exit Codes
