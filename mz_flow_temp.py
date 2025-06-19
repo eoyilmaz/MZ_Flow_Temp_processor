@@ -480,20 +480,8 @@ def process_moves_pressure_equalizer(moves):
                 logging.info(f"Using first extruding move Z as first layer: {first_layer_z}")
                 break
 
-    # --- Set initial layer temp based on average flow of all first layer moves ---
-    first_layer_flows = [m.flow for m in moves if m.extruding and m.flow > 0 and abs(m.z - first_layer_z) < 1e-5]
-    if first_layer_flows:
-        avg_first_layer_flow = sum(first_layer_flows) / len(first_layer_flows)
-        logging.info(f"Average first layer flow: {avg_first_layer_flow:.3f} mm³/s")
-        if settings['filament_max_volumetric_speed'] > 0:
-            initial_layer_temp = settings['nozzle_temperature_range_low'] + (
-                (settings['nozzle_temperature_range_high'] - settings['nozzle_temperature_range_low']) *
-                min(avg_first_layer_flow, settings['filament_max_volumetric_speed']) / settings['filament_max_volumetric_speed']
-            )
-        else:
-            initial_layer_temp = settings['nozzle_temperature_range_low']
-    else:
-        initial_layer_temp = settings.get('nozzle_temperature_initial_layer', settings['nozzle_temperature_range_low'])
+    # --- Get initial layer temp from settings (from G-code header) ---
+    initial_layer_temp = settings.get('nozzle_temperature_initial_layer', settings['nozzle_temperature_range_low'])
 
     # Collect flows from the first 30 extruding moves from the second layer
     second_layer_flows = []
