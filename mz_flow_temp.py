@@ -255,7 +255,7 @@ def parse_gcode(filename):
     moves = []
     x = y = z = e = f = 0.0
     rel_e = False
-    with open(filename, 'r') as fh:
+    with open(filename, 'r', encoding='utf-8', errors='ignore') as fh:
         for i, line in enumerate(fh):
             if line.startswith('G90'):
                 continue
@@ -319,7 +319,7 @@ def parse_settings_from_gcode(filename):
 
     # Check for required block markers before parsing settings
     try:
-        with open(filename, 'r') as f:
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         has_exec_start = any('; EXECUTABLE_BLOCK_START' in line for line in lines)
         has_exec_end = any('; EXECUTABLE_BLOCK_END' in line for line in lines)
@@ -480,8 +480,20 @@ def process_moves_pressure_equalizer(moves):
                 logging.info(f"Using first extruding move Z as first layer: {first_layer_z}")
                 break
 
-    # --- Get initial layer temp from settings (from G-code header) ---
-    initial_layer_temp = settings.get('nozzle_temperature_initial_layer', settings['nozzle_temperature_range_low'])
+    # --- Set initial layer temp based on average flow of all first layer moves ---
+    first_layer_flows = [m.flow for m in moves if m.extruding and m.flow > 0 and abs(m.z - first_layer_z) < 1e-5]
+    if first_layer_flows:
+        avg_first_layer_flow = sum(first_layer_flows) / len(first_layer_flows)
+        logging.info(f"Average first layer flow: {avg_first_layer_flow:.3f} mm³/s")
+        if settings['filament_max_volumetric_speed'] > 0:
+            initial_layer_temp = settings['nozzle_temperature_range_low'] + (
+                (settings['nozzle_temperature_range_high'] - settings['nozzle_temperature_range_low']) *
+                min(avg_first_layer_flow, settings['filament_max_volumetric_speed']) / settings['filament_max_volumetric_speed']
+            )
+        else:
+            initial_layer_temp = settings['nozzle_temperature_range_low']
+    else:
+        initial_layer_temp = settings.get('nozzle_temperature_initial_layer', settings['nozzle_temperature_range_low'])
 
     # Collect flows from the first 30 extruding moves from the second layer
     second_layer_flows = []
@@ -638,7 +650,7 @@ def smooth_array(arr, times, window_sec=2.0):
 # Add debug logging for G-code output feedrate and flow
 def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
     logging.info(f"Saving processed G-code to {filename} ...")
-    with open(filename, 'r', encoding='utf-8') as fin:
+    with open(filename, 'r', encoding='utf-8', errors='ignore') as fin:
         all_lines = fin.readlines()
 
     move_lookup = {move.line_num: move for move in moves if move.extruding}
@@ -675,13 +687,13 @@ def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
             processed_lines.append(line)
 
     try:
-        with open(filename, 'w', encoding='utf-8', newline='') as fout:
+        with open(filename, 'w', encoding='utf-8', errors='ignore', newline='') as fout:
             fout.writelines(processed_lines)
             # Also save a copy for the viewer if enabled
             if settings.get('mz_flow_temp_launch_viewer', False):
                 viewer_filename = os.path.join(os.path.dirname(log_path), "processed.gcode")
                 try:
-                    with open(viewer_filename, 'w', encoding='utf-8', newline='') as backup_fout:
+                    with open(viewer_filename, 'w', encoding='utf-8', errors='ignore', newline='') as backup_fout:
                         backup_fout.writelines(processed_lines)
                     logging.info(f"Viewer G-code saved to: {viewer_filename}")
                 except Exception as e:
@@ -693,7 +705,7 @@ def save_processed_gcode(filename, moves, mz_start=None, mz_end=None):
     return filename
 
 def get_marker_indices(filename):
-    with open(filename, 'r', encoding='utf-8') as fin:
+    with open(filename, 'r', encoding='utf-8', errors='ignore') as fin:
         all_lines = fin.readlines()
     exec_start = next((i for i, l in enumerate(all_lines) if '; EXECUTABLE_BLOCK_START' in l), None)
     exec_end = next((i for i, l in enumerate(all_lines) if '; EXECUTABLE_BLOCK_END' in l), None)
