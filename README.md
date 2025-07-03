@@ -85,12 +85,24 @@ python3 mz_flow_temp.py <input.gcode>
 
 4. Add the command to **Print process > Others > Post-processing scripts** (adjust the path as needed):
 
+    **for Linux/MacOS**
     ```bash
-    python3 <path to script>/mz_flow_temp.py
+    python <path to script>/mz_flow_temp.py
     ```
     or
     ```bash
-    python <path to script>/mz_flow_temp.py
+    python3 <path to script>/mz_flow_temp.py
+    ```
+
+    **for Windows**
+    
+    get full path to python.exe run this in cmd:
+    ```cmd
+    where python
+    ```
+    and paste it here
+    ```cmd
+    "C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\Python\Python313\python.exe"  <path to script>/mz_flow_temp.py
     ```
 
     ![Post script](images/post_script.png)
