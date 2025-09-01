@@ -30,9 +30,13 @@ A Python post-processor for 3D printer G-code files, implementing advanced flow 
 
 **Install dependencies:**
 
-Linux:
+Ubuntu/Debian Linux:
 ```bash
 sudo apt install python3-matplotlib python3-numpy python3-pyqt5 python3-psutil
+```
+Arch/Cachyos Linux:
+```bash
+sudo pacman -S python-matplotlib python-numpy python-pyqt5 python-psutil
 ```
 
 Windows:

@@ -152,23 +152,29 @@ plot_axes = None
 plot_lines = {}
 
 def get_parent_process_info():
-    """Return (name, exe_path) of the parent process, or (None, None) if unavailable."""
+    """Return (name, exe_path) of the parent or grandparent process, or (None, None) if unavailable."""
     try:
-        p = psutil.Process()
-        parent = p.parent()
-        if parent is not None:
-            # Check for common slicer names (case-insensitive, partial match)
-            slicer_names = ['orca', 'prusa', 'cura', 'super', 'bambu', 'ideamaker', 'slic3r']
-            parent_name_lower = parent.name().lower()
-            if any(slicer in parent_name_lower for slicer in slicer_names):
-                logging.info(f"Parent process: {parent.name()} ({parent.pid})")
-                return parent.name(), parent.exe()
-            else:
-                logging.info(f"Parent process is not a recognized slicer: {parent.name()} ({parent.pid})")
-                return None, None
-    except Exception as e:
-        logging.warning(f"Could not determine parent process: {e}")
-    return None, None
+        parent = psutil.Process(os.getppid())
+    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+        logging.warning(f"Could not access parent process: {e}")
+        return None, None
+
+    grandparent = parent.parent()
+    target_proc = grandparent if grandparent else parent
+    try:
+        exe_path = target_proc.exe()
+        logging.info(f"Checked process executable path: {exe_path}")
+        slicer_names = ['orca', 'prusa', 'cura', 'super', 'bambu', 'ideamaker', 'slic3r']
+        exe_path_lower = exe_path.lower()
+        if any(slicer in exe_path_lower for slicer in slicer_names):
+            logging.info(f"Recognized slicer process: {exe_path}")
+            return 'slicer', exe_path
+        else:
+            logging.info(f"Process is not a recognized slicer: {exe_path}")
+            return None, None
+    except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+        logging.warning(f"Could not access process executable: {e}")
+        return None, None
 
 def setup_realtime_plot():
     global plot_fig, plot_axes, plot_lines
